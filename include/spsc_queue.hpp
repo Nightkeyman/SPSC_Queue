@@ -15,8 +15,10 @@ public:
     {
     }
 
+    SpscQueue(const SpscQueue&) = delete;
+    SpscQueue& operator=(const SpscQueue&) = delete;
 
-    bool try_push(T item)
+    bool try_push(T queue_item)
     {
         const std::size_t head = head_.load(std::memory_order_relaxed);
         const std::size_t next_head = next(head);
@@ -26,7 +28,7 @@ public:
             return false;
         }
 
-        buffer_[head] = std::move(item);
+        buffer_[head] = std::move(queue_item);
 
         head_.store(next_head, std::memory_order_release);
         return true;
@@ -47,9 +49,15 @@ public:
         return true;
     }
 
-    bool empty();
+    bool empty() const
+    {
+        return head_.load(std::memory_order_relaxed) == tail_.load(std::memory_order_relaxed);
+    }
 
-    bool full();
+    bool full() const
+    {
+        return next(head_.load(std::memory_order_relaxed)) == tail_.load(std::memory_order_relaxed);
+    }
 
     std::size_t capacity() const
     {
