@@ -1,13 +1,16 @@
+# Base style
 BasedOnStyle: LLVM
 Language: Cpp
 Standard: c++17
 
+# Indentation
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
 ColumnLimit: 100
 AccessModifierOffset: -4
 
+# Braces and short-block collapsing
 BreakBeforeBraces: Allman
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: false
@@ -15,11 +18,13 @@ AllowShortLoopsOnASingleLine: false
 AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
 
+# Alignment and spacing
 PointerAlignment: Left
 AlignAfterOpenBracket: Align
 SpaceAfterCStyleCast: false
 SpaceBeforeParens: ControlStatements
 
+# Organization
 NamespaceIndentation: None
 IndentCaseLabels: true
 SortIncludes: true
