@@ -10,7 +10,7 @@ acquire/release ordering.
 
 ```
 include/spsc_queue.hpp   the queue itself
-src/main.cpp             demo -- one producer, one consumer, 100 items
+src/main.cpp             demo -- one producer, one consumer, 20 items
 tests/                   GoogleTest suite, basic + concurrent
 bench/                   A/B benchmark with previous queue approach
 ```
