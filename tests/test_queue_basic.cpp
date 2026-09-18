@@ -2,6 +2,8 @@
 #include <array>
 #include <cstddef>
 #include <gtest/gtest.h>
+#include <memory>
+#include <utility>
 
 namespace
 {
@@ -82,6 +84,45 @@ TEST_F(SpscQueueBasicTest, WhenWrappingPastBufferEnd_ExpectPreservedFifoOrder)
         ASSERT_TRUE(queue_.try_pop(popped));
         EXPECT_EQ(popped, pushed - kResidentItems);
     }
+}
+
+class SpscQueueMoveOnlyTest : public ::testing::Test
+{
+protected:
+    SpscQueue<std::unique_ptr<int>> queue_{kCapacity};
+};
+
+TEST_F(SpscQueueMoveOnlyTest, WhenItemsAreMoveOnly_ExpectPreservedFifoOrder)
+{
+    ASSERT_TRUE(queue_.try_push(std::make_unique<int>(1)));
+    ASSERT_TRUE(queue_.try_push(std::make_unique<int>(2)));
+
+    std::unique_ptr<int> out;
+    ASSERT_TRUE(queue_.try_pop(out));
+    ASSERT_NE(out, nullptr);
+    EXPECT_EQ(*out, 1);
+
+    ASSERT_TRUE(queue_.try_pop(out));
+    ASSERT_NE(out, nullptr);
+    EXPECT_EQ(*out, 2);
+}
+
+TEST_F(SpscQueueMoveOnlyTest, WhenPushFailsOnFullQueue_ExpectItemNotConsumed)
+{
+    for (std::size_t i = 0; i < kCapacity; ++i)
+    {
+        ASSERT_TRUE(queue_.try_push(std::make_unique<int>(static_cast<int>(i))));
+    }
+
+    auto rejected = std::make_unique<int>(99);
+    ASSERT_FALSE(queue_.try_push(std::move(rejected)));
+    ASSERT_NE(rejected, nullptr);
+    EXPECT_EQ(*rejected, 99);
+
+    std::unique_ptr<int> out;
+    ASSERT_TRUE(queue_.try_pop(out));
+    EXPECT_TRUE(queue_.try_push(std::move(rejected)));
+    EXPECT_EQ(rejected, nullptr);
 }
 
 } // namespace
