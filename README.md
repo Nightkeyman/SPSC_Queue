@@ -54,7 +54,7 @@ Needs optimizations enabled, so build it Release:
 
 ```
 cmake --build build --target spsc_bench --config Release
-./build/Release/spsc_bench
+./build/spsc_bench
 ```
 
 It compares the current queue against a frozen copy of the version from before the two cache
