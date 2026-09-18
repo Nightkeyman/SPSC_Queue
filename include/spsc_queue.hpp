@@ -8,6 +8,10 @@
 #include <utility>
 #include <vector>
 
+static_assert(std::atomic<std::size_t>::is_always_lock_free,
+              "SpscQueue needs a lock-free std::atomic<std::size_t> on this platform");
+
+
 /// @brief Bounded lock-free ring buffer for exactly one producer and one consumer thread
 ///
 /// Nothing blocks -- try_push fails when full, try_pop when empty, ordered by acquire/release
@@ -113,7 +117,7 @@ private:
         return true;
     }
 
-    // not std::hardware_destructive_interference_size, as GCC warns on every use of that one
+    // not std::hardware_destructive_interference_size, as GCC9 warns on every use of that one
     static constexpr std::size_t kCacheLineSize = 64;
 
     // Each index shares its line only with its own thread's cached copy of the other one
