@@ -14,6 +14,10 @@ add_executable(spsc_demo src/main.cpp)
 find_package(Threads REQUIRED)
 target_link_libraries(spsc_demo PRIVATE spsc_queue Threads::Threads)
 
+# A/B throughput benchmark -- build with --config Release to get real numbers
+add_executable(spsc_bench bench/bench_spsc_queue.cpp)
+target_link_libraries(spsc_bench PRIVATE spsc_queue Threads::Threads)
+
 # Enable ctest discovery for the Gtests
 enable_testing()
 add_subdirectory(tests)
