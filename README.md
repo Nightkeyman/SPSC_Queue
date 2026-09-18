@@ -17,13 +17,17 @@ bench/                   A/B benchmark with previous queue approach
 
 ## Assumptions / known limitations
 
-One producer thread, one consumer thread. More of either is a data race, not just a lost
-item. 
+One producer thread, one consumer thread. More of either is a data race, not just a lost item.
 
 Nothing blocks either: `try_push` and `try_pop` return `false` when the queue is full
 or empty, and the caller decides whether to spin, yield or give up (`src/main.cpp` spins).
 
-Capacity is final once constructed, and the queue can't be copied or moved.
+Capacity is final once constructed, and the queue can't be copied or moved. Asking for 0
+throws `std::invalid_argument`, since one slot is always held back and nothing would remain.
+
+The ring is a plain `std::vector<T>` that builds every slot up front, so `T` needs a
+default constructor. `bool` is refused outright by a `static_assert`: `std::vector<bool>`
+packs bits, and both threads would end up writing the same word.
 
 ## Design notes
 
@@ -36,7 +40,7 @@ Capacity is final once constructed, and the queue can't be copied or moved.
   again. That's what makes the queue usable with move-only types.
 - `empty()` and `full()` are for logging only. They're racy, so use the `try_*` results.
 
-## Build & run
+## Build & run tests
 
 ```
 cmake -S . -B build
@@ -53,9 +57,8 @@ cmake --build build --target spsc_bench --config Release
 ./build/Release/spsc_bench
 ```
 
-It compares the current queue against a frozen copy of the version from before the two
-cache optimizations. Example run -- numbers are machine-specific, and the gain measured
-between 1.5x and 2.2x across runs:
+It compares the current queue against a frozen copy of the version from before the two cache
+optimizations. Numbers are machine-specific; the gain measured 1.5x to 2.2x across runs here:
 
 ```
 shared line, no cache     0.098 s   102.6 M ops/s    9.8 ns/op

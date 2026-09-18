@@ -3,7 +3,8 @@
 
 #include <atomic>
 #include <cstddef>
-#include <new>
+#include <stdexcept>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -13,10 +14,19 @@
 template <typename T>
 class SpscQueue
 {
+    static_assert(!std::is_same_v<T, bool>,
+                  "SpscQueue<bool> would be a data race: std::vector<bool> packs bits, so the "
+                  "producer and consumer can end up writing the same word");
+
 public:
-    /// @brief Creates a queue that holds up to `capacity` items
+    /// @brief Creates a queue that holds up to `capacity` items, throws if `capacity` is 0
     explicit SpscQueue(std::size_t capacity) : buffer_(capacity + 1)
     {
+        // A zero-capacity ring would report itself full forever and drop every push
+        if (capacity == 0)
+        {
+            throw std::invalid_argument("SpscQueue needs a capacity of at least 1");
+        }
     }
 
     SpscQueue(const SpscQueue&) = delete;
@@ -103,7 +113,8 @@ private:
         return true;
     }
 
-    static constexpr std::size_t kCacheLineSize = std::hardware_destructive_interference_size;
+    // not std::hardware_destructive_interference_size, as GCC warns on every use of that one
+    static constexpr std::size_t kCacheLineSize = 64;
 
     // Each index shares its line only with its own thread's cached copy of the other one
     std::vector<T> buffer_;

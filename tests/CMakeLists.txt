@@ -10,8 +10,6 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-find_package(Threads REQUIRED)
-
 add_executable(spsc_tests
     test_queue_basic.cpp
     test_queue_with_concurrency.cpp

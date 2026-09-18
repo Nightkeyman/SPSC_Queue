@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <gtest/gtest.h>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 namespace
@@ -19,6 +20,11 @@ protected:
 TEST_F(SpscQueueBasicTest, WhenDeclaredCapacity_ExpectSameCapacity)
 {
     EXPECT_EQ(queue_.capacity(), kCapacity);
+}
+
+TEST_F(SpscQueueBasicTest, WhenCapacityIsZero_ExpectConstructorThrows)
+{
+    EXPECT_THROW(SpscQueue<int>{0}, std::invalid_argument);
 }
 
 TEST_F(SpscQueueBasicTest, WhenQueueEmpty_ExpectPopFailure)
