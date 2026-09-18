@@ -43,7 +43,7 @@ packs bits, and both threads would end up writing the same word.
 ## Build & run tests
 
 ```
-cmake -S . -B build
+cmake -S . -B build -DCMAKE_CXX_COMPILER=<path-to-compiler>
 cmake --build build
 ctest --test-dir build --output-on-failure
 ```
