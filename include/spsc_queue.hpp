@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <cstddef>
+#include <utility>
 #include <vector>
 
 // Template class for Single Producer - Single Consumer Queue
@@ -18,20 +19,14 @@ public:
     SpscQueue(const SpscQueue&) = delete;
     SpscQueue& operator=(const SpscQueue&) = delete;
 
-    bool try_push(T queue_item)
+    bool try_push(const T& queue_item)
     {
-        const std::size_t head = head_.load(std::memory_order_relaxed);
-        const std::size_t next_head = next(head);
+        return try_push_impl(queue_item);
+    }
 
-        if (next_head == tail_.load(std::memory_order_acquire))
-        {
-            return false;
-        }
-
-        buffer_[head] = std::move(queue_item);
-
-        head_.store(next_head, std::memory_order_release);
-        return true;
+    bool try_push(T&& queue_item)
+    {
+        return try_push_impl(std::move(queue_item));
     }
 
     bool try_pop(T& out)
@@ -68,6 +63,26 @@ private:
     std::size_t next(std::size_t index) const
     {
         return index + 1 == buffer_.size() ? 0 : index + 1;
+    }
+
+    // Only copies/moves `queue_item` into the buffer once the full-check
+    // passes, so a failed attempt never consumes the caller's argument --
+    // critical for retrying with a move-only T.
+    template <typename U>
+    bool try_push_impl(U&& queue_item)
+    {
+        const std::size_t head = head_.load(std::memory_order_relaxed);
+        const std::size_t next_head = next(head);
+
+        if (next_head == tail_.load(std::memory_order_acquire))
+        {
+            return false;
+        }
+
+        buffer_[head] = std::forward<U>(queue_item);
+
+        head_.store(next_head, std::memory_order_release);
+        return true;
     }
 
     std::vector<T> buffer_;
