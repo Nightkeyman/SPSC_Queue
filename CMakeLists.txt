@@ -4,6 +4,13 @@ project(spsc_queue LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# GCC/Clang only
+option(SPSC_ENABLE_TSAN "Build with ThreadSanitizer to catch data races" OFF)
+if(SPSC_ENABLE_TSAN)
+    add_compile_options(-fsanitize=thread -g -O1)
+    add_link_options(-fsanitize=thread)
+endif()
+
 # Header-only library target
 add_library(spsc_queue INTERFACE)
 target_include_directories(spsc_queue INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)

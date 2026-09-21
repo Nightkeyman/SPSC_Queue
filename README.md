@@ -65,6 +65,16 @@ shared line, no cache     0.098 s   102.6 M ops/s    9.8 ns/op
 padded + cached index     0.044 s   225.3 M ops/s    4.4 ns/op
 ```
 
+### Sanitizer
+
+Run commands:
+
+```
+cmake -S . -B build-tsan -DCMAKE_CXX_COMPILER=clang++ -DSPSC_ENABLE_TSAN=ON
+cmake --build build-tsan
+ctest --test-dir build-tsan --output-on-failure
+```
+
 ## Tooling
 
 CMake 3.14 or newer, C++17, and GoogleTest (fetched via `FetchContent`, no manual install).
