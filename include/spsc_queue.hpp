@@ -35,6 +35,8 @@ public:
 
     SpscQueue(const SpscQueue&) = delete;
     SpscQueue& operator=(const SpscQueue&) = delete;
+    SpscQueue(SpscQueue&&) = delete;
+    SpscQueue& operator=(SpscQueue&&) = delete;
 
     /// @brief Copies an item in, fails if the queue is full
     bool try_push(const T& queue_item)
